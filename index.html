@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Transmit Wifi Information</title>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1">
+    <style>
+      body {
+        font-size: 18px;
+        font-family: sans-serif;
+        max-width: 480px;     /* no wider than 480px, narrower on phones */
+        margin: 10px;
+      }
+      input {
+        font-size: 18px;
+      }
+      button {
+        display:block;
+        font-size: 24px;
+        font-weight: bold;
+        border-radius: 5px;
+        margin: 10px auto 0 auto;
+        padding: 10px;
+      }
+    </style>
+    <script src="transmitter/afsk.js"></script>
+    <script src="transmitter/play.js"></script>
+    <script src="shared/wrapper.js"></script>
+    <script>
+      function transmit() {
+        // This is the text we want to transmit
+        var data = document.getElementById('ssid').value + '\n' +
+          document.getElementById('password').value;
+        // Create an acoustic modulator with the default parameters
+        var modulate = afsk();
+        // Wrap text with a checksum, modulate to an audio signal, and play it.
+        play(modulate(wrapper.wrap(data)));
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Transmit Wifi Information</h1>
+    <p>
+      Enter your wifi network name and wifi password, then
+      tap <b>Transmit</b> and hold your phone up to the microphone on
+      your device. (Or hold your device up to your computer speakers).
+    </p>
+    <p>Wifi Network Name:<br/><input id="ssid"><p/>
+    <p>Wifi Password:<br/><input id="password"><p/>
+    <p><button onclick="transmit()">Transmit</button></p>
+  </body>
+</html>
