@@ -7,18 +7,8 @@
 // modem, using 8-N-1 encoding, which means that each byte is encoded
 // as 10 bits: a start bit, 8 data bits, no parity bit and a stop bit.
 //
-// By default (you can override these defaults in the object passed to
-// afsk()), the returned modulator function uses a sampling frequency
-// of 48000 samples per second. It modulates data at 300 bits per
-// second (300 baud) which is a data transmission rate of 30 bytes per
-// second since 10 bits are transmitted per byte. It uses frequencies
-// of 4500 and 3000Hz to indicate 1 and 0 bits (this is different than
-// the Bell 202 defaults but see to be less susceptable to
-// environmental noise.) By default, the modulator also adds a
-// synchronization byte of 0xAA at the start of each transmission.
-// set options.syncByte to null if you don't want any syncronization byte.
-// If you modify the samplesPerSecond or bitsPerSecond defaults, ensure
-// that samplesPerSecond is an integer multiple of bitsPerSecond.
+// afsk() takes an objec that contains  modem configuration options.
+// See shared/config.js for the default values.
 //
 // The modulation function is designed to produce audio that can be
 // demodulated using minimodem: https://github.com/kamalmostafa/minimodem
@@ -35,16 +25,10 @@
 function afsk(options) {
   'use strict';
 
-  options = options || {};
-  var samplesPerSecond = options.samplesPerSecond || 48000;
-  var bitsPerSecond = options.bitsPerSecond || 300;
-  var markFrequency = options.markFrequency || 4500;
-  var spaceFrequency = options.spaceFrequency || 3000;
-  var carrierPrefixLength = options.carrierPrefixLength || 80;
-  // Use options.syncByte: null if you don't want one
-  var syncByte = (options.syncByte !== undefined) ? options.syncByte : 0xAA;
+  var carrierPrefixLength = options.carrierPrefixLength || 0;
+  var syncByte = options.syncByte || null;
 
-  var samplesPerBit = samplesPerSecond / bitsPerSecond;
+  var samplesPerBit = options.samplesPerSecond / options.bitsPerSecond;
   if (samplesPerBit !== Math.round(samplesPerBit)) {
     throw new Error('samplesPerSecond must be an integer multiple' +
                     ' of bitsPerSecond');
@@ -63,15 +47,15 @@ function afsk(options) {
     var phase = 0.0;
 
     function mark() {
-      modulateBit(markFrequency);
+      modulateBit(options.markFrequency);
     }
 
     function space() {
-      modulateBit(spaceFrequency);
+      modulateBit(options.spaceFrequency);
     }
 
     function modulateBit(frequency) {
-      var samplesPerCycle = samplesPerSecond / frequency;
+      var samplesPerCycle = options.samplesPerSecond / frequency;
       var phaseChangePerSample = 2 * Math.PI / samplesPerCycle;
       for(var i = 0; i < samplesPerBit; i++) {
         samples[sampleIndex] = Math.sin(phase);

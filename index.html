@@ -24,18 +24,19 @@
         padding: 10px;
       }
     </style>
+    <script src="shared/config.js"></script>
+    <script src="shared/wrapper.js"></script>
     <script src="transmitter/afsk.js"></script>
     <script src="transmitter/play.js"></script>
-    <script src="shared/wrapper.js"></script>
     <script>
       function transmit() {
         // This is the text we want to transmit
         var data = document.getElementById('ssid').value + '\n' +
           document.getElementById('password').value;
-        // Create an acoustic modulator with the default parameters
-        var modulate = afsk();
+        // Create an acoustic modulator with the config from config.js
+        var modulate = afsk(modemOptions);
         // Wrap text with a checksum, modulate to an audio signal, and play it.
-        play(modulate(wrapper.wrap(data)));
+        play(modulate(wrapper.wrap(data)), modemOptions.samplesPerSecond);
       }
     </script>
   </head>
