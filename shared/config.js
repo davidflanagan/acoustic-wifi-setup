@@ -5,7 +5,7 @@
     // The baud rate: how many bits per second we transmit.
     // Note that not all of these are data bits. We send 10 bits per byte
     // plus some overhead
-    bitsPerSecond: 150,
+    bitsPerSecond: 75,
     // The frequency in Hz that indicates a 1 bit. This frequency and the next
     // are substantially higher than the old Bell 202 acoustic modem default.
     // Higher values seem to be more robust against environmental noise.
@@ -22,7 +22,7 @@
     // Set this to true if you're running the receiver code on a Linux system
     // that does not have PulseAudio installed. (It adds -A to the minimodem
     // commandline).
-    requiresDashA: false
+    requiresDashA: true
   }
 
   if (global.window) {

@@ -1,7 +1,7 @@
-var spawnSync = require('child_process').spawnSync;
+var spawn = require('child_process').spawn;
 var unwrap = require('../shared/wrapper.js').unwrap;
 
-module.exports = function receiveTransmission(config) {
+module.exports = function receiveTransmission(config, led, callback) {
   config = config || {}
   var command = 'minimodem';
 
@@ -25,22 +25,59 @@ module.exports = function receiveTransmission(config) {
     args.push('-A');
   }
 
-  var result = spawnSync(command, args, {encoding:'utf8'});
+  var minimodem = spawn(command, args);
+  var stdout = "";
+  var stderr = "";
+  var blue = false;
 
-  try {
-    var message = unwrap(result.stdout);
-    return message;
-  }
-  catch(e) {
-    var stats = {received: result.stdout};
-    var words = result.stderr.split(' ');
-    words.forEach((w) => {
-      var parts = w.split('=');
-      if (parts.length === 2) {
-        stats[parts[0]] = parts[1];
-      }
-    })
 
-    throw new Error(e.message + ' ' + JSON.stringify(stats));
-  }
+  minimodem.stderr.on('data', (data) => {
+    stderr += data;
+    // Minimodem outputs to stderr when it first detects the carrier signal
+    // and again when it loses the carrier at the end of the transmission
+    // Make sure the led is blue when this happens
+    if (!blue) {
+      led.blue();
+      blue = true;
+    }
+  });
+
+  minimodem.stdout.on('data', (data) => {
+    stdout += data;
+
+    // Toggle the led on or off each time we get data on stdout.
+    // this should make it blink on or off for each character we receive
+    if (blue) {
+      led.off();
+      blue = false;
+    }
+    else {
+      led.blue();
+      blue = true;
+    }
+  });
+  
+
+  minimodem.on('close', (code) => {
+    var result = null, error = null;
+
+    try {
+      result = unwrap(stdout);
+    }
+    catch(e) {
+      var stats = {received: stdout};
+      var words = stderr.split(' ');
+      words.forEach((w) => {
+        var parts = w.split('=');
+        if (parts.length === 2) {
+          stats[parts[0]] = parts[1];
+        }
+      })
+
+      error = new Error(e.message + ' ' + JSON.stringify(stats));
+    }
+
+    callback(error, result);
+  });
+
 };
