@@ -22,7 +22,14 @@
     // Set this to true if you're running the receiver code on a Linux system
     // that does not have PulseAudio installed. (It adds -A to the minimodem
     // commandline).
-    requiresDashA: true
+    requiresDashA: false,
+
+    // If you're testing the receiver code on a computer that does not
+    // support Linux-style GPIO, set these properties to null. 
+    // Otherwise set them to the appropriate GPIO pin
+    redGPIO: null,  // 25
+    blueGPIO: null, // 24
+    greenGPIO: null // 23
   }
 
   if (global.window) {

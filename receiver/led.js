@@ -22,6 +22,10 @@ LED.prototype.release = function() {
 };
 
 LED.prototype.configurePin = function(n) {
+  if (!n) {
+    return null;
+  }
+
   try {
     fs.writeFileSync('/sys/class/gpio/export', n.toString());
   }
@@ -34,41 +38,42 @@ LED.prototype.configurePin = function(n) {
 };
 
 LED.prototype.releasePin = function(n, fd) {
+  if (!n) return;
   fs.writeFileSync('/sys/class/gpio/unexport', n.toString());
   fs.closeSync(fd);
 };
 
 LED.prototype.off = function() {
-  fs.writeSync(this.redFD, "0", 0, 1);
-  fs.writeSync(this.greenFD, "0", 0, 1);
-  fs.writeSync(this.blueFD, "0", 0, 1);
+  if (this.redFD) fs.writeSync(this.redFD, "0", 0, 1);
+  if (this.greenFD) fs.writeSync(this.greenFD, "0", 0, 1);
+  if (this.blueFD) fs.writeSync(this.blueFD, "0", 0, 1);
   if (this.tty) {
     this.tty.write('\x0d  ');
   }
 }
 
 LED.prototype.red = function() {
-  fs.writeSync(this.redFD, "1", 0, 1);
-  fs.writeSync(this.greenFD, "0", 0, 1);
-  fs.writeSync(this.blueFD, "0", 0, 1);
+  if (this.redFD) fs.writeSync(this.redFD, "1", 0, 1);
+  if (this.greenFD) fs.writeSync(this.greenFD, "0", 0, 1);
+  if (this.blueFD) fs.writeSync(this.blueFD, "0", 0, 1);
   if (this.tty) {
     this.tty.write('\x0d\x1b[41m  \x1b[0m');
   }
 }
 
 LED.prototype.green = function(on) {
-  fs.writeSync(this.redFD, "0", 0, 1);
-  fs.writeSync(this.greenFD, "1", 0, 1);
-  fs.writeSync(this.blueFD, "0", 0, 1);
+  if (this.redFD) fs.writeSync(this.redFD, "0", 0, 1);
+  if (this.greenFD) fs.writeSync(this.greenFD, "1", 0, 1);
+  if (this.blueFD) fs.writeSync(this.blueFD, "0", 0, 1);
   if (this.tty) {
     this.tty.write('\x0d\x1b[42m  \x1b[0m');
   }
 }
 
 LED.prototype.blue = function(on) {
-  fs.writeSync(this.redFD, "0", 0, 1);
-  fs.writeSync(this.greenFD, "0", 0, 1);
-  fs.writeSync(this.blueFD, "1", 0, 1);
+  if (this.redFD) fs.writeSync(this.redFD, "0", 0, 1);
+  if (this.greenFD) fs.writeSync(this.greenFD, "0", 0, 1);
+  if (this.blueFD) fs.writeSync(this.blueFD, "1", 0, 1);
   if (this.tty) {
     this.tty.write('\x0d\x1b[44m  \x1b[0m');
   }
