@@ -7,7 +7,6 @@ module.exports = function receiveTransmission(config, led, callback) {
 
   var args = [
     '-r',
-    '--rx-one',
     String(config.bitsPerSecond) || 300,
     '-M',
     String(config.markFrequency) || 4500,
@@ -40,6 +39,36 @@ module.exports = function receiveTransmission(config, led, callback) {
       led.blue();
       blue = true;
     }
+
+    // If the stderr now includes a NOCARRIER line, then we're done with
+    // a batch of data and need to call the callback.
+    if (stderr.match(/^### NOCARRIER .* ###$/m)) {
+      var result = null, error = null;
+
+      try {
+        result = unwrap(stdout);
+      }
+      catch(e) {
+        var stats = {received: stdout};
+        var words = stderr.split(' ');
+        words.forEach((w) => {
+          var parts = w.split('=');
+          if (parts.length === 2) {
+            stats[parts[0]] = parts[1];
+          }
+        })
+
+        error = new Error(e.message + ' ' + JSON.stringify(stats));
+      }
+
+      // Since we're done with this batch, reset our state
+      stdout = "";
+      stderr = "";
+      led.red();
+      blue = false;
+
+      callback(error, result);
+    }
   });
 
   minimodem.stdout.on('data', (data) => {
@@ -56,28 +85,7 @@ module.exports = function receiveTransmission(config, led, callback) {
       blue = true;
     }
   });
-  
 
-  minimodem.on('close', (code) => {
-    var result = null, error = null;
-
-    try {
-      result = unwrap(stdout);
-    }
-    catch(e) {
-      var stats = {received: stdout};
-      var words = stderr.split(' ');
-      words.forEach((w) => {
-        var parts = w.split('=');
-        if (parts.length === 2) {
-          stats[parts[0]] = parts[1];
-        }
-      })
-
-      error = new Error(e.message + ' ' + JSON.stringify(stats));
-    }
-
-    callback(error, result);
-  });
-
+  // Return the child process so we can kill it once we're connected
+  return minimodem;
 };

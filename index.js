@@ -3,6 +3,7 @@ var receiveTransmission = require('./receiver/receiveTransmission.js');
 var config = require('./shared/config.js');
 var LED = require('./receiver/led.js');
 var led = new LED(config.redGPIO, config.greenGPIO, config.blueGPIO, true);
+var listenerProcess;
 
 // Do we have a wifi connection?
 wifi.getStatus().then((status) => {
@@ -18,9 +19,14 @@ wifi.getStatus().then((status) => {
   }
 });
 
-// We're connected to wifi. Turn the LED green, log our connected ssid and exit
+// We're connected to wifi.
+// Turn the LED green, kill the listener process
+// log the ssid we're connected to, and exit.
 function showConnection() {
   led.green();
+  if (listenerProcess) {
+    listenerProcess.kill();
+  }
   wifi.getConnectedNetwork()
     .then((ssid) => {
       console.log("Connected to", ssid);
@@ -45,13 +51,11 @@ function setupWifi() {
 
   // While we're doing that, we also listen for acoustic data transfer of
   // wifi credentials
-  receiveTransmission(config, led, function(error, data) {
+  listenerProcess = receiveTransmission(config, led, function(error, data) {
     if (error){
       console.log(error);
       led.red();
-      // XXX: We should play an error sound and try again.
-      // But for now we just exit in this case
-      process.exit(1);
+      // XXX: We should play an error sound here
     }
     else {
       lines = data.split('\n');
@@ -61,12 +65,6 @@ function setupWifi() {
                   "\nssid", ssid,
                   "\npassword:", password);
       wifi.defineNetwork(ssid, password);
-
-      // XXX Hopefully at this point the device will connect and we'll
-      // exit. But we should keep listening in case this does not work.
-      // receiveTransmission should not use the --rx-one flag, so that
-      // it just keeps listening and calls the callback for every
-      // batch of data it receives.
     }
   });
 }
