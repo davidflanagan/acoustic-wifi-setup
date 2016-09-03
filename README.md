@@ -1,6 +1,7 @@
 # acoustic-wifi-setup
 Get an IoT device (with microphone) online by transmitting wifi
-network and password acoustically from a web app
+network and password acoustically from a web app. See a demo on youtube: 
+https://www.youtube.com/watch?v=EegFAwh7Kmk
 
 ## Setup
 
