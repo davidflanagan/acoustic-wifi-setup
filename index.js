@@ -2,7 +2,7 @@ var wifi = require('./wifi/wifi.js');
 var receiveTransmission = require('./receiver/receiveTransmission.js');
 var config = require('./shared/config.js');
 var LED = require('./receiver/led.js');
-var led = new LED(config.redGPIO, config.greenGPIO, config.blueGPIO, true);
+var led = new LED(config.redGPIO, config.greenGPIO, config.blueGPIO, false);
 var listenerProcess;
 
 // Do we have a wifi connection?
